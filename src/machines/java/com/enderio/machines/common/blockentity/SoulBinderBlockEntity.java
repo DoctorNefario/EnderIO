@@ -38,8 +38,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
-import static com.enderio.base.common.util.ExperienceUtil.EXP_TO_FLUID;
-
 public class SoulBinderBlockEntity extends PoweredMachineBlockEntity {
 
     public static final QuadraticScalable CAPACITY = new QuadraticScalable(CapacitorModifier.ENERGY_CAPACITY, MachinesConfig.COMMON.ENERGY.SOUL_BINDER_CAPACITY);
@@ -178,8 +176,8 @@ public class SoulBinderBlockEntity extends PoweredMachineBlockEntity {
                 INPUT_OTHER.getItemStack(getInventory()).shrink(1);
 
                 var fluidTank = getFluidTankNN();
-                int leftover = ExperienceUtil.getLevelFromFluidWithLeftover(fluidTank.getFluidAmount(), 0, recipe.getExpCost()).experience();
-                fluidTank.drain(fluidTank.getFluidAmount() - leftover * EXP_TO_FLUID, IFluidHandler.FluidAction.EXECUTE);
+                int amountUsed = ExperienceUtil.lvlToMb(recipe.getExpCost());
+                fluidTank.drain(amountUsed, IFluidHandler.FluidAction.EXECUTE);
             }
 
         };

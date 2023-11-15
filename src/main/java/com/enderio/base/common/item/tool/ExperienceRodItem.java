@@ -1,13 +1,12 @@
 package com.enderio.base.common.item.tool;
 
 import com.enderio.base.common.init.EIOFluids;
-import com.enderio.base.common.lang.EIOLang;
 import com.enderio.base.common.tag.EIOTags;
 import com.enderio.base.common.util.ExperienceUtil;
+import com.enderio.base.common.util.ExperienceUtil.SimpleXpFluid;
 import com.enderio.core.common.network.CoreNetwork;
 import com.enderio.core.common.network.EmitParticlePacket;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -61,58 +60,52 @@ public class ExperienceRodItem extends Item {
     }
 
     private static boolean transferFromBlockToPlayer(Player player, Level level, BlockPos pos) {
-        try {
-            BlockEntity blockEntity = level.getBlockEntity(pos);
-            if (blockEntity != null) {
-                return blockEntity.getCapability(ForgeCapabilities.FLUID_HANDLER).map(fluidHandler -> {
-
-                    FluidStack availableFluid = fluidHandler.getFluidInTank(0);
-                    if (availableFluid.getFluid().is(EIOTags.Fluids.EXPERIENCE) && availableFluid.getAmount() > 0) {
-                        int requiredXp = player.getXpNeededForNextLevel();
-                        int fluidVolume = requiredXp * ExperienceUtil.EXP_TO_FLUID;
-
-                        FluidStack drained = fluidHandler.drain(fluidVolume, IFluidHandler.FluidAction.EXECUTE);
-
-                        if (!drained.isEmpty()) {
-                            player.giveExperiencePoints(drained.getAmount() / ExperienceUtil.EXP_TO_FLUID);
-                            return true;
-                        }
-                    }
-
-                    return false;
-                }).orElse(false);
-            }
-        } catch (ArithmeticException ex) {
-            player.displayClientMessage(EIOLang.TOO_MANY_LEVELS, true);
+        if (ExperienceUtil.getMbNeededForNextLevel(player.experienceLevel) > Integer.MAX_VALUE) {
+            // should be level 11,930,483
+            // would require too much XP to level up from here
+            return false;
         }
 
-        return false;
+        SimpleXpFluid playerXp = SimpleXpFluid.fromPlayer(player);
+
+        BlockEntity blockEntity = level.getBlockEntity(pos);
+        if (blockEntity == null) {
+            return false;
+        }
+
+        return blockEntity.getCapability(ForgeCapabilities.FLUID_HANDLER).map(fluidHandler -> {
+            FluidStack availableFluid = fluidHandler.getFluidInTank(0);
+            if (availableFluid.getFluid().is(EIOTags.Fluids.EXPERIENCE) && availableFluid.getAmount() > 0) {
+                SimpleXpFluid requestedXp = SimpleXpFluid.fromLevel(playerXp.level() + 1).saturatingSub(playerXp.millibuckets());
+                FluidStack drained = fluidHandler.drain(requestedXp.mbInt(), IFluidHandler.FluidAction.EXECUTE);
+
+                if (!drained.isEmpty()) {
+                    new SimpleXpFluid(drained.getAmount()).addToPlayer(player);
+                    return true;
+                }
+            }
+
+            return false;
+        }).orElse(false);
     }
 
     private static boolean transferFromPlayerToBlock(Player player, Level level, BlockPos pos) {
-        try {
-            if (player.experienceLevel <= 0 && player.experienceProgress <= 0.0f) {
-                return false;
-            }
+        SimpleXpFluid playerXp = SimpleXpFluid.fromPlayer(player);
 
-            BlockEntity blockEntity = level.getBlockEntity(pos);
-            if (blockEntity != null) {
-                return blockEntity.getCapability(ForgeCapabilities.FLUID_HANDLER).map(fluidHandler -> {
-                    int fluidVolume = ExperienceUtil.getPlayerTotalXp(player) * ExperienceUtil.EXP_TO_FLUID;
-                    FluidStack fs = new FluidStack(EIOFluids.XP_JUICE.getSource(), fluidVolume);
-                    int takenVolume = fluidHandler.fill(fs, IFluidHandler.FluidAction.EXECUTE);
-                    if (takenVolume > 0) {
-                        player.giveExperiencePoints(-takenVolume / ExperienceUtil.EXP_TO_FLUID);
-                        return true;
-                    }
-
-                    return false;
-                }).orElse(false);
-            }
-        } catch (ArithmeticException ex) {
-            player.displayClientMessage(EIOLang.TOO_MANY_LEVELS, true);
+        BlockEntity blockEntity = level.getBlockEntity(pos);
+        if (blockEntity == null) {
+            return false;
         }
 
-        return false;
+        return blockEntity.getCapability(ForgeCapabilities.FLUID_HANDLER).map(fluidHandler -> {
+            FluidStack fs = new FluidStack(EIOFluids.XP_JUICE.getSource(), playerXp.mbInt());
+            int takenVolume = fluidHandler.fill(fs, IFluidHandler.FluidAction.EXECUTE);
+            if (takenVolume > 0) {
+                new SimpleXpFluid(takenVolume).subtractFromPlayer(player);
+                return true;
+            }
+
+            return false;
+        }).orElse(false);
     }
 }

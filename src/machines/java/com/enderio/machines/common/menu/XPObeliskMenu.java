@@ -1,5 +1,6 @@
 package com.enderio.machines.common.menu;
 
+import com.enderio.base.common.util.ExperienceUtil;
 import com.enderio.machines.common.blockentity.XPObeliskBlockEntity;
 import com.enderio.machines.common.init.MachineMenus;
 import net.minecraft.network.FriendlyByteBuf;
@@ -27,14 +28,18 @@ public class XPObeliskMenu extends MachineMenu<XPObeliskBlockEntity> {
     @Override
     public boolean clickMenuButton(Player player, int id) {
         XPObeliskBlockEntity blockEntity = getBlockEntity();
-        if (blockEntity == null) return false;
+        if (blockEntity == null) {
+            return false;
+        }
+
         switch (id) {
-        case 0 -> blockEntity.addLevelToPlayer(1, player);
-        case 1 -> blockEntity.addLevelToPlayer(-1, player);
-        case 2 -> blockEntity.addLevelToPlayer(10, player);
-        case 3 -> blockEntity.addLevelToPlayer(-10, player);
-        case 4 -> blockEntity.addAllLevelToPlayer(true, player);
-        case 5 -> blockEntity.addAllLevelToPlayer(false, player);
+        case 0 -> blockEntity.adjustPlayerLevel(player, 1);
+        case 1 -> blockEntity.adjustPlayerLevel(player, -1);
+        case 2 -> blockEntity.adjustPlayerLevel(player, 10);
+        case 3 -> blockEntity.adjustPlayerLevel(player, -10);
+        case 4 -> blockEntity.adjustPlayerLevel(player, ExperienceUtil.MAX_PLAYER_LEVEL_GIVE);
+        case 5 -> blockEntity.adjustPlayerLevel(player, -ExperienceUtil.MAX_PLAYER_LEVEL_GIVE);
+        default -> {}
         }
         return true;
     }

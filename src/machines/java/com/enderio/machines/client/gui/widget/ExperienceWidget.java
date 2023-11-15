@@ -1,6 +1,7 @@
 package com.enderio.machines.client.gui.widget;
 
-import com.enderio.base.common.util.ExperienceUtil;
+import com.enderio.base.common.util.ExperienceTank;
+import com.enderio.base.common.util.ExperienceUtil.SimpleXpFluid;
 import com.enderio.core.client.gui.widgets.EIOWidget;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
@@ -28,8 +29,21 @@ public class ExperienceWidget extends EIOWidget {
         RenderSystem.defaultBlendFunc();
         RenderSystem.enableDepthTest();
 
-        ExperienceUtil.ExperienceLevel expLevel = ExperienceUtil.getLevelFromFluidWithLeftover(getFluid.get().getFluidAmount());
-        int fill = (int) ((((float) expLevel.experience()) / ExperienceUtil.getXpNeededForNextLevel(expLevel.level())) * this.width) - 1;
+        FluidTank tank = getFluid.get();
+
+        int expLevel;
+        float expProgress;
+
+        if (tank instanceof ExperienceTank expTank) {
+            SimpleXpFluid simpleXp = expTank.getXpFluid();
+            expLevel = simpleXp.level();
+            expProgress = (float) simpleXp.levelProgress();
+        } else {
+            SimpleXpFluid simpleXp = new SimpleXpFluid(tank.getFluidAmount());
+            expLevel = simpleXp.level();
+            expProgress = (float) simpleXp.levelProgress();
+        }
+        int fill = (int) (expProgress * this.width) - 1;
 
         guiGraphics.blit(GUI_ICONS_LOCATION, this.x, this.y, 0, 0, 64, this.width-1, this.height, 256, 256);
         guiGraphics.blit(GUI_ICONS_LOCATION, this.x + this.width-1, this.y, 0, 181, 64, 1, this.height, 256, 256);
@@ -37,7 +51,7 @@ public class ExperienceWidget extends EIOWidget {
         guiGraphics.blit(GUI_ICONS_LOCATION, this.x + this.width-1, this.y, 0, 181, 64, fill==this.width-1? 1 : 0, this.height, 256, 256);
 
         var font = Minecraft.getInstance().font;
-        String text = "" + expLevel.level();
+        String text = "" + expLevel;
         int xOffset = font.width(text) / 2 ;
         guiGraphics.drawString(font, text, (this.x + this.width/2 + 1) - xOffset, (float)this.y - this.height - 3, 0, false);
         guiGraphics.drawString(font, text, (this.x + this.width/2 - 1) - xOffset, (float)this.y - this.height - 3, 0, false);

@@ -32,9 +32,13 @@ public class ExperienceCraftingWidget extends EIOWidget {
         RenderSystem.defaultBlendFunc();
         RenderSystem.enableDepthTest();
 
+        int requiredMb = ExperienceUtil.lvlToMb(maxXP.get());
+
         int k = 1;
         if (maxXP.get() > 0) {
-            k = (int) (((getFluid.get().getFluidAmount() / ((float) ExperienceUtil.getFluidFromLevel(maxXP.get()))) * this.width)-1);
+            float progress = getFluid.get().getFluidAmount() / (float) requiredMb;
+
+            k = (int) (progress * this.width) - 1;
             if (k > this.width-1) {
                 k = this.width-1;
             }
@@ -53,7 +57,7 @@ public class ExperienceCraftingWidget extends EIOWidget {
         guiGraphics.drawString(font, s, this.x + this.width/2, (float)this.y - this.height - 3, 8453920, false);
 
         if (isHovered(pMouseX, pMouseY)) {
-            setTooltip(Tooltip.create(Component.literal(getFluid.get().getFluidAmount() + " mb / " + ExperienceUtil.getFluidFromLevel(maxXP.get()) + " mb")));
+            setTooltip(Tooltip.create(Component.literal(getFluid.get().getFluidAmount() + " mb / " + requiredMb + " mb")));
         }
     }
 

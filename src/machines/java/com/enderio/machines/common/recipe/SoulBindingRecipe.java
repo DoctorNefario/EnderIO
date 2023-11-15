@@ -132,6 +132,7 @@ public class SoulBindingRecipe implements MachineRecipe<SoulBindingRecipe.Contai
             return false;
         }
 
+        boolean isEnoughFluid = ExperienceUtil.mbToLvl(container.fluid.get()) >= exp;
         if (souldata != null) { //is in the selected souldata
             if (SoulDataReloadListener.fromString(souldata).matches(
                 container.getItem(0).getCapability(EIOCapabilities.ENTITY_STORAGE).resolve().get()
@@ -139,11 +140,11 @@ public class SoulBindingRecipe implements MachineRecipe<SoulBindingRecipe.Contai
                 return false;
             }
 
-            return ExperienceUtil.getLevelFromFluid(container.fluid.get()) >= exp;
+            return isEnoughFluid;
         }
 
         if (mobCategory == null && entityType == null) { //No souldata, entity type or mob category
-            return ExperienceUtil.getLevelFromFluid(container.fluid.get()) >= exp;
+            return isEnoughFluid;
         }
 
         IEntityStorage storage = capability.resolve().get();
@@ -159,12 +160,12 @@ public class SoulBindingRecipe implements MachineRecipe<SoulBindingRecipe.Contai
             }
 
             if (entityType.getCategory().equals(mobCategory)) {
-                return ExperienceUtil.getLevelFromFluid(container.fluid.get()) >= exp;
+                return isEnoughFluid;
             }
         }
         //type matters
         if (storage.hasStoredEntity() && storage.getStoredEntityData().getEntityType().get().equals(entityType)) {
-            return ExperienceUtil.getLevelFromFluid(container.fluid.get()) >= exp;
+            return isEnoughFluid;
         }
 
         return false;
