@@ -65,9 +65,9 @@ public class XPObeliskBlockEntity extends MachineBlockEntity {
         };
     }
 
-    public void adjustPlayerLevel(Player player, int levelDiff) {
+    public void adjustPlayerLevel(Player player, int levelCount) {
         if (getFluidTankNN() instanceof ExperienceTank xpTank) {
-            xpTank.runOnXpFluid(simpleXp -> simpleXp.useToAdjustPlayerLevel(player, levelDiff));
+            xpTank.runOnXpFluid(simpleXp -> simpleXp.useToAdjustPlayerLevel(player, levelCount));
         }
     }
 

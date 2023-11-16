@@ -37,8 +37,8 @@ public class XPObeliskMenu extends MachineMenu<XPObeliskBlockEntity> {
         case 1 -> blockEntity.adjustPlayerLevel(player, -1);
         case 2 -> blockEntity.adjustPlayerLevel(player, 10);
         case 3 -> blockEntity.adjustPlayerLevel(player, -10);
-        case 4 -> blockEntity.adjustPlayerLevel(player, ExperienceUtil.MAX_PLAYER_LEVEL_GIVE);
-        case 5 -> blockEntity.adjustPlayerLevel(player, -ExperienceUtil.MAX_PLAYER_LEVEL_GIVE);
+        case 4 -> blockEntity.adjustPlayerLevel(player, Integer.MAX_VALUE);
+        case 5 -> blockEntity.adjustPlayerLevel(player, Integer.MIN_VALUE);
         default -> {}
         }
         return true;
